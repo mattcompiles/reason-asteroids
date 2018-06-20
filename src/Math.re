@@ -1,0 +1,1 @@
+let degreesToRadians = angle => angle *. (Js.Math._PI /. 180.);
