@@ -8,4 +8,5 @@ type t = {
   shipSize: size,
   fps: int,
   updateTimes: list(float),
+  screenSize: size,
 };

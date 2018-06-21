@@ -6,6 +6,7 @@ let initialState: GameState.t = {
   shipSize: (36., 60.),
   fps: 0,
   updateTimes: [],
+  screenSize: (700., 700.),
 };
 
 let update = state =>
@@ -16,7 +17,7 @@ let update = state =>
   |. Ship.update;
 
 let draw = (ctx, state) => {
-  Draw_canvas.clearFrame(ctx);
+  Draw_canvas.clearFrame(ctx, state);
   Ship.draw(ctx, state);
   Draw_canvas.fps(ctx, ~fps=state.fps);
 };

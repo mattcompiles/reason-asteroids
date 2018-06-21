@@ -36,4 +36,7 @@ let fps = (canvas, ~fps) => {
   fillText(canvas, string_of_int(fps), 10., 50.);
 };
 
-let clearFrame = ctx => Canvas.clearRect(ctx, 0., 0., 1024., 512.);
+let clearFrame = (ctx, {screenSize}: GameState.t) => {
+  let (x, y) = screenSize;
+  Canvas.clearRect(ctx, 0., 0., x, y);
+};

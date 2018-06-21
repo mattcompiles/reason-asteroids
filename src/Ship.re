@@ -40,9 +40,29 @@ let calcVelocity = (state: GameState.t, {up}: Controls.input) => {
     ),
 };
 
+let normalizePosition = ({screenSize}: GameState.t, position: Vec.t) : Vec.t => {
+  let (width, height) = screenSize;
+  {
+    x:
+      switch (position.x) {
+      | x when x > width => 0.
+      | x when x < 0. => width
+      | x => x
+      },
+    y:
+      switch (position.y) {
+      | y when y > height => 0.
+      | y when y < 0. => height
+      | y => y
+      },
+  };
+};
+
 let calcPosition = (state: GameState.t) => {
   ...state,
-  shipPosition: Vec.add(state.shipPosition, state.shipVelocity),
+  shipPosition:
+    Vec.add(state.shipPosition, state.shipVelocity)
+    |> normalizePosition(state),
 };
 
 let update = (state: GameState.t) => {
