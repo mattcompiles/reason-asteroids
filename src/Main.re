@@ -1,14 +1,19 @@
+type size = (float, float);
+
+type t = {
+  ship: Ship.t,
+  performanceStats: PerformanceStats.t,
+  screenSize: size,
+  asteroids: array(Asteroid.t),
+  bullets: list(Bullet.t),
+};
+
 let screenSize = (700., 700.);
 
-let initialState: GameState.t = {
-  shipPosition: Vec.make(75., 150.),
-  shipVelocity: Vec.make(0., 0.),
-  shipThrust: Vec.make(0., 0.),
-  shipAngle: Math.degreesToRadians(0.),
-  shipSize: (36., 60.),
-  fps: 0,
-  updateTimes: [],
-  screenSize: (700., 700.),
+let initialState = {
+  ship: Ship.make(),
+  performanceStats: PerformanceStats.make(),
+  screenSize,
   asteroids: [|
     Asteroid.make(Asteroid.Large, screenSize),
     Asteroid.make(Asteroid.Large, screenSize),
@@ -18,33 +23,34 @@ let initialState: GameState.t = {
 };
 
 let update = state => {
-  let newState =
-    Stats.calcFps(
-      state,
+  let performanceStats =
+    PerformanceStats.calcFps(
+      state.performanceStats,
       Dom_html.windowToJsObj(Dom_html.window)##performance##now(),
-    )
-    |. Ship.update;
+    );
 
-  let asteroids = Array.map(Asteroid.update(screenSize), newState.asteroids);
+  let ship = Ship.update(state.ship, state.screenSize);
+
+  let asteroids = Array.map(Asteroid.update(screenSize), state.asteroids);
 
   let bullets =
     Controls.activeInput.shoot ?
-      List.map(Bullet.update, Ship.shoot(newState)) :
-      List.map(Bullet.update, newState.bullets);
+      List.map(Bullet.update, Ship.shoot(state.ship, state.bullets)) :
+      List.map(Bullet.update, state.bullets);
 
-  {...newState, asteroids, bullets};
+  {...state, asteroids, bullets, ship, performanceStats};
 };
 
 let draw = (ctx, state) => {
-  Draw_canvas.clearFrame(ctx, state);
+  Draw_canvas.clearFrame(ctx, state.screenSize);
 
-  Ship.draw(ctx, state);
+  Ship.draw(ctx, state.ship);
 
   Array.iter(Asteroid.draw(ctx), state.asteroids);
 
   List.iter(Bullet.draw(ctx), state.bullets);
 
-  Draw_canvas.fps(ctx, ~fps=state.fps);
+  Draw_canvas.fps(ctx, ~fps=state.performanceStats.fps);
 };
 
 let rec updateLoop = (canvas, state, _) => {
