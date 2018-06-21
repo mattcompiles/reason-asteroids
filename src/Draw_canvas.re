@@ -36,4 +36,4 @@ let fps = (canvas, ~fps) => {
   fillText(canvas, string_of_int(fps), 10., 50.);
 };
 
-let clearFrame = ctx => Canvas.clearRect(ctx, 0., 0., 512., 256.);
+let clearFrame = ctx => Canvas.clearRect(ctx, 0., 0., 1024., 512.);

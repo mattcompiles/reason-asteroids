@@ -1,5 +1,7 @@
 let initialState: GameState.t = {
-  shipPosition: (75., 150.),
+  shipPosition: Vec.make(75., 150.),
+  shipVelocity: Vec.make(0., 0.),
+  shipThrust: Vec.make(0., 0.),
   shipAngle: Math.degreesToRadians(0.),
   shipSize: (36., 60.),
   fps: 0,

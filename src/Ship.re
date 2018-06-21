@@ -1,41 +1,68 @@
-let speed = 3.;
-let turnSpeed = 0.1;
+let acceleration = 0.01;
+let friction = 0.97;
+let turnVelocity = 0.1;
+let maxVelocity = 10.;
+let shipAngleModifier = Math.degreesToRadians(90.);
 
-let draw = (ctx, {shipPosition, shipSize, shipAngle}: GameState.t) => {
-  let (x, y) = shipPosition;
-  let (width, height) = shipSize;
-
-  Draw_canvas.triangle(ctx, ~x, ~y, ~angle=shipAngle, ~height, ~width);
+let calcAngle = (state: GameState.t, {left, right}: Controls.input) => {
+  ...state,
+  shipAngle:
+    switch (left, right) {
+    | (true, false) => state.shipAngle -. turnVelocity
+    | (false, true) => state.shipAngle +. turnVelocity
+    | _ => state.shipAngle
+    },
 };
 
-let calcAngle = ({shipAngle}: GameState.t, {left, right}: Controls.input) =>
-  switch (left, right) {
-  | (true, false) => shipAngle -. turnSpeed
-  | (false, true) => shipAngle +. turnSpeed
-  | _ => shipAngle
+let calcThrust = (state: GameState.t, {up}: Controls.input) => {
+  ...state,
+  shipThrust:
+    up ?
+      Vec.length(state.shipThrust, 0.1)
+      |. Vec.angle(state.shipAngle -. shipAngleModifier) :
+      Vec.length(state.shipThrust, 0.),
+};
+
+let normalizeVelocity = velocity =>
+  switch (Vec.getLength(velocity)) {
+  | vel when vel > maxVelocity => Vec.length(velocity, maxVelocity)
+  | vel when vel < 0.01 => Vec.length(velocity, 0.)
+  | _ => velocity
   };
 
-let normalizeAngle = a => a < 0. ? a *. (-1.) : a;
+let calcVelocity = (state: GameState.t, {up}: Controls.input) => {
+  ...state,
+  shipVelocity:
+    normalizeVelocity(
+      up ?
+        Vec.add(state.shipVelocity, state.shipThrust) :
+        Vec.multiply(state.shipVelocity, friction),
+    ),
+};
 
-let calcPosition =
-    ({shipAngle, shipPosition}: GameState.t, {up}: Controls.input) =>
-  if (up) {
-    let angle = shipAngle -. Math.degreesToRadians(90.);
-    let speedX = speed *. Js.Math.cos(angle);
-    let speedY = speed *. Js.Math.sin(angle);
-
-    let (x, y) = shipPosition;
-
-    (x +. speedX, y +. speedY);
-  } else {
-    shipPosition;
-  };
+let calcPosition = (state: GameState.t) => {
+  ...state,
+  shipPosition: Vec.add(state.shipPosition, state.shipVelocity),
+};
 
 let update = (state: GameState.t) => {
-  let controls: Controls.input = Controls.activeInput;
+  let controls = Controls.activeInput;
 
-  let newAngle = calcAngle(state, controls);
-  let newPosition = calcPosition(state, controls);
+  calcAngle(state, controls)
+  |. calcThrust(controls)
+  |. calcVelocity(controls)
+  |. calcPosition;
+};
 
-  {...state, shipAngle: newAngle, shipPosition: newPosition};
+let draw = (ctx, {shipPosition, shipSize, shipAngle}: GameState.t) => {
+  let (width, height) = shipSize;
+
+  Draw_canvas.triangle(
+    ctx,
+    ~x=shipPosition.x,
+    ~y=shipPosition.y,
+    ~angle=shipAngle,
+    ~height,
+    ~width,
+  );
 };

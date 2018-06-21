@@ -1,9 +1,9 @@
-type point = (float, float);
-
 type size = (float, float);
 
 type t = {
-  shipPosition: point,
+  shipPosition: Vec.t,
+  shipVelocity: Vec.t,
+  shipThrust: Vec.t,
   shipAngle: float,
   shipSize: size,
   fps: int,
