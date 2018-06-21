@@ -9,4 +9,6 @@ type t = {
   fps: int,
   updateTimes: list(float),
   screenSize: size,
+  asteroids: array(Asteroid.t),
+  bullets: list(Bullet.t),
 };

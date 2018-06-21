@@ -1,8 +1,15 @@
-let acceleration = 0.01;
-let friction = 0.97;
+let friction = 0.94;
 let turnVelocity = 0.1;
 let maxVelocity = 10.;
 let shipAngleModifier = Math.degreesToRadians(90.);
+
+/* type t = {
+     shipPosition: Vec.t,
+     shipVelocity: Vec.t,
+     shipThrust: Vec.t,
+     shipAngle: float,
+     shipSize: (float, float),
+   }; */
 
 let calcAngle = (state: GameState.t, {left, right}: Controls.input) => {
   ...state,
@@ -40,29 +47,11 @@ let calcVelocity = (state: GameState.t, {up}: Controls.input) => {
     ),
 };
 
-let normalizePosition = ({screenSize}: GameState.t, position: Vec.t) : Vec.t => {
-  let (width, height) = screenSize;
-  {
-    x:
-      switch (position.x) {
-      | x when x > width => 0.
-      | x when x < 0. => width
-      | x => x
-      },
-    y:
-      switch (position.y) {
-      | y when y > height => 0.
-      | y when y < 0. => height
-      | y => y
-      },
-  };
-};
-
 let calcPosition = (state: GameState.t) => {
   ...state,
   shipPosition:
     Vec.add(state.shipPosition, state.shipVelocity)
-    |> normalizePosition(state),
+    |> Utils.normalizePosition(state.screenSize),
 };
 
 let update = (state: GameState.t) => {
@@ -73,6 +62,11 @@ let update = (state: GameState.t) => {
   |. calcVelocity(controls)
   |. calcPosition;
 };
+
+let shoot = (state: GameState.t) => [
+  Bullet.make(state.shipPosition, state.shipAngle),
+  ...state.bullets,
+];
 
 let draw = (ctx, {shipPosition, shipSize, shipAngle}: GameState.t) => {
   let (width, height) = shipSize;
