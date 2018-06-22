@@ -5,7 +5,6 @@ type t = {
   performanceStats: PerformanceStats.t,
   screenSize: size,
   asteroids: array(Asteroid.t),
-  bullets: list(Bullet.t),
 };
 
 let screenSize = (700., 700.);
@@ -18,8 +17,8 @@ let initialState = {
     Asteroid.make(Asteroid.Large, screenSize),
     Asteroid.make(Asteroid.Large, screenSize),
     Asteroid.make(Asteroid.Large, screenSize),
+    Asteroid.make(Asteroid.Small, screenSize),
   |],
-  bullets: [],
 };
 
 let update = state => {
@@ -33,12 +32,7 @@ let update = state => {
 
   let asteroids = Array.map(Asteroid.update(screenSize), state.asteroids);
 
-  let bullets =
-    Controls.activeInput.shoot ?
-      List.map(Bullet.update, Ship.shoot(state.ship, state.bullets)) :
-      List.map(Bullet.update, state.bullets);
-
-  {...state, asteroids, bullets, ship, performanceStats};
+  {...state, asteroids, ship, performanceStats};
 };
 
 let draw = (ctx, state) => {
@@ -47,8 +41,6 @@ let draw = (ctx, state) => {
   Ship.draw(ctx, state.ship);
 
   Array.iter(Asteroid.draw(ctx), state.asteroids);
-
-  List.iter(Bullet.draw(ctx), state.bullets);
 
   Draw_canvas.fps(ctx, ~fps=state.performanceStats.fps);
 };

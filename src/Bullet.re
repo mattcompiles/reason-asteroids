@@ -22,6 +22,6 @@ let update = state => {
 
 let draw = (ctx, {position}) => {
   Canvas.beginPath(ctx);
-  Canvas.arc(ctx, position.x, position.y, 1., 0., Math.doublePI);
-  Canvas.stroke(ctx);
+  Canvas.arc(ctx, position.x, position.y, 2., 0., Math.doublePI);
+  Canvas.fill(ctx);
 };

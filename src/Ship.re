@@ -9,6 +9,8 @@ type t = {
   thrust: Vec.t,
   angle: float,
   size: (float, float),
+  bulletDelay: int,
+  bullets: list(Bullet.t),
 };
 
 let make = () => {
@@ -17,6 +19,8 @@ let make = () => {
   thrust: Vec.make(0., 0.),
   angle: Math.degreesToRadians(0.),
   size: (36., 60.),
+  bulletDelay: 0,
+  bullets: [],
 };
 
 let calcAngle = (ship, {left, right}: Controls.input) => {
@@ -62,21 +66,36 @@ let calcPosition = (ship, screenSize) => {
     |> Utils.normalizePosition(screenSize),
 };
 
+let isArmed = ship => ship.bulletDelay > 8;
+
+let calcWeaponState = (ship, input: Controls.input) =>
+  switch (input.shoot) {
+  | true when isArmed(ship) => {
+      ...ship,
+      bulletDelay: 0,
+      bullets: [Bullet.make(ship.position, ship.angle), ...ship.bullets],
+    }
+  | _ when ! isArmed(ship) => {...ship, bulletDelay: ship.bulletDelay + 1}
+  | _ => ship
+  };
+
+let updateBullets = ship => {
+  ...ship,
+  bullets: List.map(Bullet.update, ship.bullets),
+};
+
 let update = (ship, screenSize) => {
   let controls = Controls.activeInput;
 
   calcAngle(ship, controls)
   |. calcThrust(controls)
   |. calcVelocity(controls)
-  |. calcPosition(screenSize);
+  |. calcPosition(screenSize)
+  |. calcWeaponState(controls)
+  |. updateBullets;
 };
 
-let shoot = (ship, bullets) => [
-  Bullet.make(ship.position, ship.angle),
-  ...bullets,
-];
-
-let draw = (ctx, {position, angle, size}) => {
+let draw = (ctx, {position, angle, size, bullets}) => {
   let (width, height) = size;
 
   Draw_canvas.triangle(
@@ -87,4 +106,6 @@ let draw = (ctx, {position, angle, size}) => {
     ~height,
     ~width,
   );
+
+  List.iter(Bullet.draw(ctx), bullets);
 };
