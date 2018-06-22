@@ -11,6 +11,7 @@ type t = {
   size: (float, float),
   bulletDelay: int,
   bullets: list(Bullet.t),
+  radius: float,
 };
 
 let make = () => {
@@ -18,9 +19,10 @@ let make = () => {
   velocity: Vec.make(0., 0.),
   thrust: Vec.make(0., 0.),
   angle: Math.degreesToRadians(0.),
-  size: (36., 60.),
+  size: (30., 30.),
   bulletDelay: 0,
   bullets: [],
+  radius: 15.,
 };
 
 let calcAngle = (ship, {left, right}: Controls.input) => {

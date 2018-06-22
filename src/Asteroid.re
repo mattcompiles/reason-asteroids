@@ -15,21 +15,23 @@ type t = {
   sizeType,
   pixelSize: float,
   velocity: Vec.t,
+  edgeModifier: float,
+  radius: float,
 };
 
 let edgeCount = 7;
 
-let sizeTypeToSize = sizeType =>
+let sizeTypeProps = sizeType =>
   switch (sizeType) {
-  | Large => 80.
-  | Medium => 50.
-  | Small => 30.
+  | Large => (80., (-20.), 80.)
+  | Medium => (50., (-10.), 50.)
+  | Small => (30., (-5.), 30.)
   };
 
 let edgeThing = 2. *. Js.Math._PI /. 7.;
 
-let makeEdge = (size, num) => {
-  let modifier = num mod 2 == 1 ? Js.Math.random() *. (-50.) : 0.;
+let makeEdge = (size, num, edgeModifier) => {
+  let modifier = num mod 2 == 1 ? Js.Math.random() *. edgeModifier : 0.;
 
   Vec.make(
     modifier +. size *. Js.Math.cos(float_of_int(num) *. edgeThing),
@@ -37,11 +39,11 @@ let makeEdge = (size, num) => {
   );
 };
 
-let rec makeEdges = (size, numRemaining, edges) =>
+let rec makeEdges = (size, numRemaining, edgeModifier, edges) =>
   if (numRemaining > 0) {
-    let edge = makeEdge(size, numRemaining);
+    let edge = makeEdge(size, numRemaining, edgeModifier);
 
-    makeEdges(size, numRemaining - 1, [edge, ...edges]);
+    makeEdges(size, numRemaining - 1, edgeModifier, [edge, ...edges]);
   } else {
     edges;
   };
@@ -56,12 +58,14 @@ let randomPosition = ((width, height)) => {
 };
 
 let make = (sizeType, screenSize) => {
-  let pixelSize = sizeTypeToSize(sizeType);
+  let (pixelSize, edgeModifier, radius) = sizeTypeProps(sizeType);
   {
-    edges: makeEdges(pixelSize, edgeCount, []),
+    edges: makeEdges(pixelSize, edgeCount, edgeModifier, []),
     position: randomPosition(screenSize),
     pixelSize,
+    edgeModifier,
     sizeType,
+    radius,
     velocity:
       Vec.angle(
         Vec.make(asteroidVelocity, asteroidVelocity),

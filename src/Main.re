@@ -4,7 +4,7 @@ type t = {
   ship: Ship.t,
   performanceStats: PerformanceStats.t,
   screenSize: size,
-  asteroids: array(Asteroid.t),
+  asteroids: list(Asteroid.t),
 };
 
 let screenSize = (700., 700.);
@@ -13,12 +13,11 @@ let initialState = {
   ship: Ship.make(),
   performanceStats: PerformanceStats.make(),
   screenSize,
-  asteroids: [|
+  asteroids: [
     Asteroid.make(Asteroid.Large, screenSize),
-    Asteroid.make(Asteroid.Large, screenSize),
-    Asteroid.make(Asteroid.Large, screenSize),
+    Asteroid.make(Asteroid.Medium, screenSize),
     Asteroid.make(Asteroid.Small, screenSize),
-  |],
+  ],
 };
 
 let update = state => {
@@ -30,7 +29,21 @@ let update = state => {
 
   let ship = Ship.update(state.ship, state.screenSize);
 
-  let asteroids = Array.map(Asteroid.update(screenSize), state.asteroids);
+  let a = List.map(Asteroid.update(screenSize), state.asteroids);
+  let asteroids =
+    List.filter(
+      (asteroid: Asteroid.t) =>
+        !
+          List.exists(
+            (bullet: Bullet.t) =>
+              Collision.detect(
+                (asteroid.position, asteroid.radius),
+                (bullet.position, bullet.radius),
+              ),
+            ship.bullets,
+          ),
+      a,
+    );
 
   {...state, asteroids, ship, performanceStats};
 };
@@ -40,7 +53,7 @@ let draw = (ctx, state) => {
 
   Ship.draw(ctx, state.ship);
 
-  Array.iter(Asteroid.draw(ctx), state.asteroids);
+  List.iter(Asteroid.draw(ctx), state.asteroids);
 
   Draw_canvas.fps(ctx, ~fps=state.performanceStats.fps);
 };
