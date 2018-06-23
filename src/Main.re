@@ -20,6 +20,26 @@ let initialState = {
   ],
 };
 
+let checkBulletAsteroidCollisions = (asteroids, bullets) => {
+  let (destroyedAsteroids, unharmedAsteroids) =
+    List.partition(
+      (asteroid: Asteroid.t) =>
+        List.exists(
+          (bullet: Bullet.t) =>
+            Collision.detect(
+              (asteroid.position, asteroid.collisionRadius),
+              (bullet.position, bullet.radius),
+            ),
+          bullets,
+        ),
+      asteroids,
+    );
+
+  List.map(asteroid => Asteroid.destroy(asteroid), destroyedAsteroids)
+  |> List.flatten
+  |> List.append(unharmedAsteroids);
+};
+
 let update = state => {
   let performanceStats =
     PerformanceStats.calcFps(
@@ -29,21 +49,9 @@ let update = state => {
 
   let ship = Ship.update(state.ship, state.screenSize);
 
-  let a = List.map(Asteroid.update(screenSize), state.asteroids);
   let asteroids =
-    List.filter(
-      (asteroid: Asteroid.t) =>
-        !
-          List.exists(
-            (bullet: Bullet.t) =>
-              Collision.detect(
-                (asteroid.position, asteroid.radius),
-                (bullet.position, bullet.radius),
-              ),
-            ship.bullets,
-          ),
-      a,
-    );
+    checkBulletAsteroidCollisions(state.asteroids, ship.bullets)
+    |> List.map(Asteroid.update(screenSize));
 
   {...state, asteroids, ship, performanceStats};
 };

@@ -16,16 +16,16 @@ type t = {
   pixelSize: float,
   velocity: Vec.t,
   edgeModifier: float,
-  radius: float,
+  collisionRadius: float,
 };
 
 let edgeCount = 7;
 
 let sizeTypeProps = sizeType =>
   switch (sizeType) {
-  | Large => (80., (-20.), 80.)
-  | Medium => (50., (-10.), 50.)
-  | Small => (30., (-5.), 30.)
+  | Large => (80., (-20.), 75.)
+  | Medium => (50., (-10.), 45.)
+  | Small => (30., (-5.), 25.)
   };
 
 let edgeThing = 2. *. Js.Math._PI /. 7.;
@@ -58,14 +58,31 @@ let randomPosition = ((width, height)) => {
 };
 
 let make = (sizeType, screenSize) => {
-  let (pixelSize, edgeModifier, radius) = sizeTypeProps(sizeType);
+  let (pixelSize, edgeModifier, collisionRadius) = sizeTypeProps(sizeType);
   {
     edges: makeEdges(pixelSize, edgeCount, edgeModifier, []),
     position: randomPosition(screenSize),
     pixelSize,
     edgeModifier,
     sizeType,
-    radius,
+    collisionRadius,
+    velocity:
+      Vec.angle(
+        Vec.make(asteroidVelocity, asteroidVelocity),
+        Math.degreesToRadians(Js.Math.random() *. 360.),
+      ),
+  };
+};
+
+let makeChild = (sizeType, position) => {
+  let (pixelSize, edgeModifier, collisionRadius) = sizeTypeProps(sizeType);
+  {
+    edges: makeEdges(pixelSize, edgeCount, edgeModifier, []),
+    position,
+    pixelSize,
+    edgeModifier,
+    sizeType,
+    collisionRadius,
     velocity:
       Vec.angle(
         Vec.make(asteroidVelocity, asteroidVelocity),
@@ -80,6 +97,19 @@ let update = (screenSize, asteroid) => {
     Vec.add(asteroid.position, asteroid.velocity)
     |> Utils.normalizePosition(screenSize),
 };
+
+let destroy = asteroid =>
+  switch (asteroid.sizeType) {
+  | Large => [
+      makeChild(Medium, asteroid.position),
+      makeChild(Medium, asteroid.position),
+    ]
+  | Medium => [
+      makeChild(Small, asteroid.position),
+      makeChild(Small, asteroid.position),
+    ]
+  | Small => []
+  };
 
 let draw = (ctx, {position, edges, pixelSize}) => {
   let {x, y}: Vec.t = position;
