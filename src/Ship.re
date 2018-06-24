@@ -11,18 +11,20 @@ type t = {
   size: (float, float),
   bulletDelay: int,
   bullets: list(Bullet.t),
-  radius: float,
+  collisionRadius: float,
+  destroyed: bool,
 };
 
-let make = () => {
-  position: Vec.make(75., 150.),
+let make = ((width, height)) => {
+  position: Vec.make(width /. 2., height /. 2.),
   velocity: Vec.make(0., 0.),
   thrust: Vec.make(0., 0.),
   angle: Math.degreesToRadians(0.),
   size: (30., 30.),
   bulletDelay: 0,
   bullets: [],
-  radius: 15.,
+  collisionRadius: 15.,
+  destroyed: false,
 };
 
 let calcAngle = (ship, {left, right}: Controls.input) => {
@@ -81,33 +83,47 @@ let calcWeaponState = (ship, input: Controls.input) =>
   | _ => ship
   };
 
-let updateBullets = ship => {
+let removeOldBullets = (ship, screenSize) => {
   ...ship,
-  bullets: List.map(Bullet.update, ship.bullets),
+  bullets:
+    List.filter(
+      (bullet: Bullet.t) => ! Utils.outOfScreen(screenSize, bullet.position),
+      ship.bullets,
+    ),
 };
 
-let update = (ship, screenSize) => {
+let updateBullets = (ship, bullets) => {
+  ...ship,
+  bullets: List.map(Bullet.update, bullets),
+};
+
+let update = (ship, bullets, screenSize) => {
   let controls = Controls.activeInput;
 
   calcAngle(ship, controls)
   |. calcThrust(controls)
   |. calcVelocity(controls)
   |. calcPosition(screenSize)
-  |. calcWeaponState(controls)
-  |. updateBullets;
+  |. updateBullets(bullets)
+  |. removeOldBullets(screenSize)
+  |. calcWeaponState(controls);
 };
 
-let draw = (ctx, {position, angle, size, bullets}) => {
+let destroy = ship => {...ship, destroyed: true};
+
+let draw = (ctx, {position, angle, size, bullets, destroyed}) => {
   let (width, height) = size;
 
-  Draw_canvas.triangle(
-    ctx,
-    ~x=position.x,
-    ~y=position.y,
-    ~angle,
-    ~height,
-    ~width,
-  );
+  if (! destroyed) {
+    Draw_canvas.triangle(
+      ctx,
+      ~x=position.x,
+      ~y=position.y,
+      ~angle,
+      ~height,
+      ~width,
+    );
+  };
 
   List.iter(Bullet.draw(ctx), bullets);
 };

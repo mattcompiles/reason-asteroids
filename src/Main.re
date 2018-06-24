@@ -10,7 +10,7 @@ type t = {
 let screenSize = (700., 700.);
 
 let initialState = {
-  ship: Ship.make(),
+  ship: Ship.make(screenSize),
   performanceStats: PerformanceStats.make(),
   screenSize,
   asteroids: [
@@ -20,26 +20,6 @@ let initialState = {
   ],
 };
 
-let checkBulletAsteroidCollisions = (asteroids, bullets) => {
-  let (destroyedAsteroids, unharmedAsteroids) =
-    List.partition(
-      (asteroid: Asteroid.t) =>
-        List.exists(
-          (bullet: Bullet.t) =>
-            Collision.detect(
-              (asteroid.position, asteroid.collisionRadius),
-              (bullet.position, bullet.radius),
-            ),
-          bullets,
-        ),
-      asteroids,
-    );
-
-  List.map(asteroid => Asteroid.destroy(asteroid), destroyedAsteroids)
-  |> List.flatten
-  |> List.append(unharmedAsteroids);
-};
-
 let update = state => {
   let performanceStats =
     PerformanceStats.calcFps(
@@ -47,11 +27,18 @@ let update = state => {
       Dom_html.windowToJsObj(Dom_html.window)##performance##now(),
     );
 
-  let ship = Ship.update(state.ship, state.screenSize);
+  let (asteroids, bullets) =
+    Collision.checkBulletAsteroidCollisions(
+      state.asteroids,
+      [],
+      state.ship.bullets,
+    );
 
-  let asteroids =
-    checkBulletAsteroidCollisions(state.asteroids, ship.bullets)
-    |> List.map(Asteroid.update(screenSize));
+  let ship =
+    Collision.checkShipAsteroidCollisions(asteroids, state.ship)
+    |. Ship.update(bullets, state.screenSize);
+
+  let asteroids = List.map(Asteroid.update(screenSize), asteroids);
 
   {...state, asteroids, ship, performanceStats};
 };

@@ -15,3 +15,9 @@ let normalizePosition = (screenSize, position: Vec.t) : Vec.t => {
       },
   };
 };
+
+let outOfScreen = (screenSize, {x, y}: Vec.t) => {
+  let (width, height) = screenSize;
+
+  x > width || x < 0. || y > height || y < 0.;
+};
