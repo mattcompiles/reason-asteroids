@@ -53,6 +53,11 @@ let lives = (canvas, lives) =>
     );
   };
 
+let wave = (canvas, wave, (width, _)) => {
+  setFont(canvas, "22px Arial");
+  fillText(canvas, "Wave " ++ string_of_int(wave), width -. 100., 40.);
+};
+
 let clearFrame = (ctx, screenSize) => {
   let (x, y) = screenSize;
   Canvas.clearRect(ctx, 0., 0., x, y);

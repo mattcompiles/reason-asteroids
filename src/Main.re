@@ -48,7 +48,7 @@ let update = state => {
         ship: Ship.resetPosition(state.ship, state.screenSize),
       }
     | (0, framesBetweenWave) => {
-        ...state,
+        ...updateWave(state),
         framesBetweenWave: framesBetweenWave + 1,
       }
     | _ => updateWave(state)
@@ -69,6 +69,7 @@ let draw = (ctx, state) => {
   List.iter(Asteroid.draw(ctx), state.asteroids);
 
   Draw_canvas.lives(ctx, state.ship.lives);
+  Draw_canvas.wave(ctx, state.wave, screenSize);
   /* Draw_canvas.fps(ctx, ~fps=state.performanceStats.fps); */
 };
 
