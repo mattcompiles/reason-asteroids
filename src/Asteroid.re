@@ -74,6 +74,16 @@ let make = (sizeType, screenSize) => {
   };
 };
 
+let rec makeMany = (sizeType, screenSize, num, asteroids) =>
+  num == 0 ?
+    asteroids :
+    makeMany(
+      sizeType,
+      screenSize,
+      num - 1,
+      [make(sizeType, screenSize), ...asteroids],
+    );
+
 let makeChild = (sizeType, position) => {
   let (pixelSize, edgeModifier, collisionRadius) = sizeTypeProps(sizeType);
   {

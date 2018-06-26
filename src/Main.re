@@ -1,23 +1,28 @@
-type size = (float, float);
-
-type t = {
-  ship: Ship.t,
-  performanceStats: PerformanceStats.t,
-  screenSize: size,
-  asteroids: list(Asteroid.t),
-};
+open Types;
 
 let screenSize = (700., 700.);
 
 let initialState = {
-  ship: Ship.make(screenSize),
+  ship: Ship.make(screenSize, ()),
   performanceStats: PerformanceStats.make(),
   screenSize,
   asteroids: [
     Asteroid.make(Asteroid.Large, screenSize),
-    Asteroid.make(Asteroid.Medium, screenSize),
-    Asteroid.make(Asteroid.Small, screenSize),
+    Asteroid.make(Asteroid.Large, screenSize),
+    Asteroid.make(Asteroid.Large, screenSize),
   ],
+  wave: 1,
+  framesBetweenWave: 0,
+};
+
+let updateWave = state => {
+  let {ship, screenSize, asteroids} = Collision.checkCollisions(state);
+
+  let ship = Ship.update(ship, screenSize);
+
+  let asteroids = List.map(Asteroid.update(screenSize), asteroids);
+
+  {...state, asteroids, ship};
 };
 
 let update = state => {
@@ -27,30 +32,44 @@ let update = state => {
       Dom_html.windowToJsObj(Dom_html.window)##performance##now(),
     );
 
-  let (asteroids, bullets) =
-    Collision.checkBulletAsteroidCollisions(
-      state.asteroids,
-      [],
-      state.ship.bullets,
-    );
+  let newState =
+    switch (List.length(state.asteroids), state.framesBetweenWave) {
+    | (0, framesBetweenWave) when framesBetweenWave > 100 => {
+        ...state,
+        framesBetweenWave: 0,
+        wave: state.wave + 1,
+        asteroids:
+          Asteroid.makeMany(
+            Asteroid.Large,
+            state.screenSize,
+            state.wave + 3,
+            [],
+          ),
+        ship: Ship.resetPosition(state.ship, state.screenSize),
+      }
+    | (0, framesBetweenWave) => {
+        ...state,
+        framesBetweenWave: framesBetweenWave + 1,
+      }
+    | _ => updateWave(state)
+    };
 
-  let ship =
-    Collision.checkShipAsteroidCollisions(asteroids, state.ship)
-    |. Ship.update(bullets, state.screenSize);
-
-  let asteroids = List.map(Asteroid.update(screenSize), asteroids);
-
-  {...state, asteroids, ship, performanceStats};
+  {...newState, performanceStats};
 };
 
 let draw = (ctx, state) => {
   Draw_canvas.clearFrame(ctx, state.screenSize);
 
-  Ship.draw(ctx, state.ship);
+  switch (state.ship.activeState) {
+  | Living => Ship.draw(ctx, state.ship)
+  | Dead => ()
+  | GameOver => Draw_canvas.gameOver(ctx, state.screenSize)
+  };
 
   List.iter(Asteroid.draw(ctx), state.asteroids);
 
-  Draw_canvas.fps(ctx, ~fps=state.performanceStats.fps);
+  Draw_canvas.lives(ctx, state.ship.lives);
+  /* Draw_canvas.fps(ctx, ~fps=state.performanceStats.fps); */
 };
 
 let rec updateLoop = (canvas, state, _) => {

@@ -36,6 +36,23 @@ let fps = (canvas, ~fps) => {
   fillText(canvas, string_of_int(fps), 10., 50.);
 };
 
+let gameOver = (canvas, (width, height)) => {
+  setFont(canvas, "40px Arial");
+  fillText(canvas, "GAME OVER", width /. 2., height /. 2.);
+};
+
+let lives = (canvas, lives) =>
+  for (i in 1 to lives) {
+    triangle(
+      canvas,
+      ~height=30.,
+      ~width=30.,
+      ~x=float_of_int(i * 40),
+      ~y=40.,
+      ~angle=Math.degreesToRadians(0.),
+    );
+  };
+
 let clearFrame = (ctx, screenSize) => {
   let (x, y) = screenSize;
   Canvas.clearRect(ctx, 0., 0., x, y);

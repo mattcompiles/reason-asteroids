@@ -1,7 +1,7 @@
-let friction = 0.94;
-let turnVelocity = 0.1;
-let maxVelocity = 10.;
-let shipAngleModifier = Math.degreesToRadians(90.);
+type activeState =
+  | Living
+  | Dead
+  | GameOver;
 
 type t = {
   position: Vec.t,
@@ -12,10 +12,17 @@ type t = {
   bulletDelay: int,
   bullets: list(Bullet.t),
   collisionRadius: float,
-  destroyed: bool,
+  activeState,
+  framesDead: int,
+  lives: int,
 };
 
-let make = ((width, height)) => {
+let friction = 0.94;
+let turnVelocity = 0.1;
+let maxVelocity = 10.;
+let shipAngleModifier = Math.degreesToRadians(90.);
+
+let make = ((width, height), ~lives=3, ()) => {
   position: Vec.make(width /. 2., height /. 2.),
   velocity: Vec.make(0., 0.),
   thrust: Vec.make(0., 0.),
@@ -24,7 +31,9 @@ let make = ((width, height)) => {
   bulletDelay: 0,
   bullets: [],
   collisionRadius: 15.,
-  destroyed: false,
+  activeState: Living,
+  framesDead: 0,
+  lives,
 };
 
 let calcAngle = (ship, {left, right}: Controls.input) => {
@@ -92,38 +101,53 @@ let removeOldBullets = (ship, screenSize) => {
     ),
 };
 
-let updateBullets = (ship, bullets) => {
+let updateBullets = ship => {
   ...ship,
-  bullets: List.map(Bullet.update, bullets),
+  bullets: List.map(Bullet.update, ship.bullets),
 };
 
-let update = (ship, bullets, screenSize) => {
+let handleDeadState = (ship, screenSize) =>
+  switch (ship.activeState, ship.framesDead) {
+  | (Living, _) => ship
+  | (Dead, framesDead) when framesDead > 100 =>
+    make(screenSize, ~lives=ship.lives - 1, ())
+  | (_, framesDead) => {...ship, framesDead: framesDead + 1}
+  };
+
+let update = (ship, screenSize) => {
   let controls = Controls.activeInput;
 
   calcAngle(ship, controls)
   |. calcThrust(controls)
   |. calcVelocity(controls)
   |. calcPosition(screenSize)
-  |. updateBullets(bullets)
+  |. updateBullets
   |. removeOldBullets(screenSize)
-  |. calcWeaponState(controls);
+  |. calcWeaponState(controls)
+  |. handleDeadState(screenSize);
 };
 
-let destroy = ship => {...ship, destroyed: true};
+let destroy = ship => {
+  ...ship,
+  activeState: ship.lives > 0 ? Dead : GameOver,
+};
 
-let draw = (ctx, {position, angle, size, bullets, destroyed}) => {
+let resetPosition = (ship, (width, height)) => {
+  ...ship,
+  position: Vec.make(width /. 2., height /. 2.),
+};
+
+let draw = (ctx, {position, angle, size, bullets}) => {
   let (width, height) = size;
 
-  if (! destroyed) {
-    Draw_canvas.triangle(
-      ctx,
-      ~x=position.x,
-      ~y=position.y,
-      ~angle,
-      ~height,
-      ~width,
-    );
-  };
+  Draw_canvas.triangle(
+    ctx,
+    ~x=position.x,
+    ~y=position.y,
+    ~angle,
+    ~height,
+    ~width,
+  );
 
   List.iter(Bullet.draw(ctx), bullets);
 };

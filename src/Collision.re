@@ -1,3 +1,5 @@
+open Types;
+
 type collisionInfo = (Vec.t, float);
 
 let detect = (a: collisionInfo, b: collisionInfo) => {
@@ -40,13 +42,39 @@ let rec checkBulletAsteroidCollisions = (asteroids, safeAsteroids, bullets) =>
   | [] => (safeAsteroids, bullets)
   };
 
-let checkShipAsteroidCollisions = (asteroids, ship: Ship.t) =>
-  List.exists(
-    (asteroid: Asteroid.t) =>
-      detect(
-        (asteroid.position, asteroid.collisionRadius),
-        (ship.position, ship.collisionRadius),
-      ),
-    asteroids,
-  ) ?
-    Ship.destroy(ship) : ship;
+let checkShipAsteroidCollisions = (asteroids, ship: Ship.t) => {
+  let (hitAsteroids, safeAsteroids) =
+    List.partition(
+      (asteroid: Asteroid.t) =>
+        detect(
+          (asteroid.position, asteroid.collisionRadius),
+          (ship.position, ship.collisionRadius),
+        ),
+      asteroids,
+    );
+
+  switch (ship.activeState, hitAsteroids) {
+  | (Living, [destroyedAsteroid, ...rest]) => (
+      Asteroid.destroy(destroyedAsteroid) @ rest @ safeAsteroids,
+      Ship.destroy(ship),
+    )
+  | (_, _) => (asteroids, ship)
+  };
+};
+
+let checkCollisions = state => {
+  let (asteroids, updatedBullets) =
+    checkBulletAsteroidCollisions(state.asteroids, [], state.ship.bullets);
+
+  let (updatedAsteroids, updatedShip) =
+    checkShipAsteroidCollisions(asteroids, state.ship);
+
+  {
+    ...state,
+    asteroids: updatedAsteroids,
+    ship: {
+      ...updatedShip,
+      bullets: updatedBullets,
+    },
+  };
+};
