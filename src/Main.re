@@ -13,11 +13,12 @@ let initialState = {
   ],
   particles: [],
   wave: 1,
+  score: 0,
   framesBetweenWave: 0,
 };
 
 let updateWave = state => {
-  let {ship, screenSize, asteroids, particles} =
+  let {ship, screenSize, asteroids, particles, score} =
     Collision.checkCollisions(state);
 
   let ship = Ship.update(ship, screenSize);
@@ -26,7 +27,7 @@ let updateWave = state => {
 
   let particles = Particle.updateParticles(particles);
 
-  {...state, asteroids, ship, particles};
+  {...state, asteroids, ship, particles, score};
 };
 
 let update = state => {
@@ -74,7 +75,7 @@ let draw = (ctx, state) => {
   List.iter(Particle.draw(ctx), state.particles);
 
   Draw_canvas.lives(ctx, state.ship.lives);
-  Draw_canvas.wave(ctx, state.wave, screenSize);
+  Draw_canvas.score(ctx, state.score, screenSize);
   /* Draw_canvas.fps(ctx, ~fps=state.performanceStats.fps); */
 };
 

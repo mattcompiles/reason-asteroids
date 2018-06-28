@@ -38,11 +38,13 @@ let triangle = (ctx, ~height, ~width, ~x, ~y, ~angle) => {
 
 let fps = (canvas, ~fps) => {
   setFont(canvas, "20px Arial");
+  setFillStyle(canvas, "#fff");
   fillText(canvas, string_of_int(fps), 10., 50.);
 };
 
 let gameOver = (canvas, (width, height)) => {
   setFont(canvas, "40px Arial");
+  setFillStyle(canvas, "#fff");
   fillText(canvas, "GAME OVER", width /. 2., height /. 2.);
 };
 
@@ -58,9 +60,10 @@ let lives = (canvas, lives) =>
     );
   };
 
-let wave = (canvas, wave, (width, _)) => {
+let score = (canvas, score, (width, _)) => {
   setFont(canvas, "22px Arial");
-  fillText(canvas, "Wave " ++ string_of_int(wave), width -. 100., 40.);
+  setFillStyle(canvas, "#fff");
+  fillText(canvas, "Score " ++ string_of_int(score), width -. 150., 40.);
 };
 
 let clearFrame = (ctx, screenSize) => {

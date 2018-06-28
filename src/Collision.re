@@ -23,23 +23,29 @@ let checkAsteroidCollision = (asteroid: Asteroid.t, bullets) => {
     );
 
   switch (List.length(hits)) {
-  | 0 => ([asteroid], bullets, [])
+  | 0 => ([asteroid], bullets, [], 0)
   | _ => (
       Asteroid.destroy(asteroid),
       misses,
       Particle.makeAsteroidExplosion(asteroid.position),
+      switch (asteroid.sizeType) {
+      | Asteroid.Large => 10
+      | Asteroid.Medium => 25
+      | Asteroid.Small => 50
+      },
     )
   };
 };
 
 let rec checkBulletAsteroidCollisions =
-        (asteroids, safeAsteroids, bullets, particles) =>
+        (asteroids, safeAsteroids, bullets, particles, score) =>
   switch (asteroids) {
   | [asteroid, ...rest] =>
     let (
       asteroidsAfterCollision,
       bulletsAfterCollision,
       particlesAfterCollision,
+      scoreFromCollision,
     ) =
       checkAsteroidCollision(asteroid, bullets);
 
@@ -48,8 +54,9 @@ let rec checkBulletAsteroidCollisions =
       safeAsteroids @ asteroidsAfterCollision,
       bulletsAfterCollision,
       particles @ particlesAfterCollision,
+      score + scoreFromCollision,
     );
-  | [] => (safeAsteroids, bullets, particles)
+  | [] => (safeAsteroids, bullets, particles, score)
   };
 
 let checkShipAsteroidCollisions = (asteroids, ship: Ship.t) => {
@@ -73,24 +80,30 @@ let checkShipAsteroidCollisions = (asteroids, ship: Ship.t) => {
 };
 
 let checkCollisions = state => {
-  let (asteroids, updatedBullets, particles) =
+  let (asteroids, updatedBullets, particles, points) =
     checkBulletAsteroidCollisions(
       state.asteroids,
       [],
       state.ship.bullets,
       state.particles,
+      0,
     );
 
-  let (updatedAsteroids, updatedShip) =
-    checkShipAsteroidCollisions(asteroids, state.ship);
+  let (asteroids, updatedShip) =
+    if (state.ship.invincableFrames == 0) {
+      checkShipAsteroidCollisions(asteroids, state.ship);
+    } else {
+      (asteroids, state.ship);
+    };
 
   {
     ...state,
-    asteroids: updatedAsteroids,
+    asteroids,
     ship: {
       ...updatedShip,
       bullets: updatedBullets,
     },
     particles,
+    score: state.score + points,
   };
 };

@@ -15,12 +15,14 @@ type t = {
   activeState,
   framesDead: int,
   lives: int,
+  invincableFrames: int,
 };
 
 let friction = 0.94;
 let turnVelocity = 0.1;
 let maxVelocity = 10.;
 let shipAngleModifier = Math.degreesToRadians(90.);
+let invincableFrames = 100;
 
 let make = ((width, height), ~lives=3, ()) => {
   position: Vec.make(width /. 2., height /. 2.),
@@ -34,6 +36,7 @@ let make = ((width, height), ~lives=3, ()) => {
   activeState: Living,
   framesDead: 0,
   lives,
+  invincableFrames,
 };
 
 let calcAngle = (ship, {left, right}: Controls.input) => {
@@ -114,6 +117,13 @@ let handleDeadState = (ship, screenSize) =>
   | (_, framesDead) => {...ship, framesDead: framesDead + 1}
   };
 
+let updateInvincableFrames = ship => {
+  ...ship,
+  invincableFrames:
+    ship.invincableFrames > 0 ?
+      ship.invincableFrames - 1 : ship.invincableFrames,
+};
+
 let update = (ship, screenSize) => {
   let controls = Controls.activeInput;
 
@@ -124,7 +134,8 @@ let update = (ship, screenSize) => {
   |. updateBullets
   |. removeOldBullets(screenSize)
   |. calcWeaponState(controls)
-  |. handleDeadState(screenSize);
+  |. handleDeadState(screenSize)
+  |. updateInvincableFrames;
 };
 
 let destroy = ship => {

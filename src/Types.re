@@ -7,5 +7,6 @@ type gameState = {
   asteroids: list(Asteroid.t),
   particles: list(Particle.t),
   wave: int,
+  score: int,
   framesBetweenWave: int,
 };
