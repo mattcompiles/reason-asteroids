@@ -23,23 +23,33 @@ let checkAsteroidCollision = (asteroid: Asteroid.t, bullets) => {
     );
 
   switch (List.length(hits)) {
-  | 0 => ([asteroid], bullets)
-  | _ => (Asteroid.destroy(asteroid), misses)
+  | 0 => ([asteroid], bullets, [])
+  | _ => (
+      Asteroid.destroy(asteroid),
+      misses,
+      Particle.makeAsteroidExplosion(asteroid.position),
+    )
   };
 };
 
-let rec checkBulletAsteroidCollisions = (asteroids, safeAsteroids, bullets) =>
+let rec checkBulletAsteroidCollisions =
+        (asteroids, safeAsteroids, bullets, particles) =>
   switch (asteroids) {
   | [asteroid, ...rest] =>
-    let (asteroidsAfterCollision, bulletsAfterCollision) =
+    let (
+      asteroidsAfterCollision,
+      bulletsAfterCollision,
+      particlesAfterCollision,
+    ) =
       checkAsteroidCollision(asteroid, bullets);
 
     checkBulletAsteroidCollisions(
       rest,
-      List.append(safeAsteroids, asteroidsAfterCollision),
+      safeAsteroids @ asteroidsAfterCollision,
       bulletsAfterCollision,
+      particles @ particlesAfterCollision,
     );
-  | [] => (safeAsteroids, bullets)
+  | [] => (safeAsteroids, bullets, particles)
   };
 
 let checkShipAsteroidCollisions = (asteroids, ship: Ship.t) => {
@@ -63,8 +73,13 @@ let checkShipAsteroidCollisions = (asteroids, ship: Ship.t) => {
 };
 
 let checkCollisions = state => {
-  let (asteroids, updatedBullets) =
-    checkBulletAsteroidCollisions(state.asteroids, [], state.ship.bullets);
+  let (asteroids, updatedBullets, particles) =
+    checkBulletAsteroidCollisions(
+      state.asteroids,
+      [],
+      state.ship.bullets,
+      state.particles,
+    );
 
   let (updatedAsteroids, updatedShip) =
     checkShipAsteroidCollisions(asteroids, state.ship);
@@ -76,5 +91,6 @@ let checkCollisions = state => {
       ...updatedShip,
       bullets: updatedBullets,
     },
+    particles,
   };
 };

@@ -22,8 +22,5 @@ let update = state => {
   position: Vec.add(state.position, state.velocity),
 };
 
-let draw = (ctx, {position, radius}) => {
-  Canvas.beginPath(ctx);
-  Canvas.arc(ctx, position.x, position.y, radius, 0., Math.doublePI);
-  Canvas.fill(ctx);
-};
+let draw = (ctx, {position, radius}) =>
+  Draw_canvas.arc(ctx, position.x, position.y, radius, Draw_canvas.Fill);

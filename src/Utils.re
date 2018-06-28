@@ -21,3 +21,9 @@ let outOfScreen = (screenSize, {x, y}: Vec.t) => {
 
   x > width || x < 0. || y > height || y < 0.;
 };
+
+let randomVelocity = speed =>
+  Vec.angle(
+    Vec.make(speed, speed),
+    Math.degreesToRadians(Js.Math.random() *. 360.),
+  );

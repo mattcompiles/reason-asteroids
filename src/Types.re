@@ -5,6 +5,7 @@ type gameState = {
   performanceStats: PerformanceStats.t,
   screenSize: size,
   asteroids: list(Asteroid.t),
+  particles: list(Particle.t),
   wave: int,
   framesBetweenWave: int,
 };

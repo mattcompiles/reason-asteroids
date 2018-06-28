@@ -66,11 +66,7 @@ let make = (sizeType, screenSize) => {
     edgeModifier,
     sizeType,
     collisionRadius,
-    velocity:
-      Vec.angle(
-        Vec.make(asteroidVelocity, asteroidVelocity),
-        Math.degreesToRadians(Js.Math.random() *. 360.),
-      ),
+    velocity: Utils.randomVelocity(asteroidVelocity),
   };
 };
 

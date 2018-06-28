@@ -1,5 +1,9 @@
 open Canvas;
 
+type drawType =
+  | Stroke
+  | Fill;
+
 let triangle = (ctx, ~height, ~width, ~x, ~y, ~angle) => {
   let x1 = x;
   let y1 = y -. height /. 2.;
@@ -28,6 +32,7 @@ let triangle = (ctx, ~height, ~width, ~x, ~y, ~angle) => {
   lineTo(ctx, x2r, y2r);
   lineTo(ctx, x3r, y3r);
   closePath(ctx);
+  setStrokeStyle(ctx, "#fff");
   stroke(ctx);
 };
 
@@ -61,4 +66,18 @@ let wave = (canvas, wave, (width, _)) => {
 let clearFrame = (ctx, screenSize) => {
   let (x, y) = screenSize;
   Canvas.clearRect(ctx, 0., 0., x, y);
+};
+
+let arc = (ctx, x, y, radius, drawType) => {
+  beginPath(ctx);
+  arc(ctx, x, y, radius, 0., Math.doublePI);
+
+  switch (drawType) {
+  | Fill =>
+    setFillStyle(ctx, "#fff");
+    fill(ctx);
+  | Stroke =>
+    setStrokeStyle(ctx, "#fff");
+    stroke(ctx);
+  };
 };

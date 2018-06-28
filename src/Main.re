@@ -11,18 +11,22 @@ let initialState = {
     Asteroid.make(Asteroid.Large, screenSize),
     Asteroid.make(Asteroid.Large, screenSize),
   ],
+  particles: [],
   wave: 1,
   framesBetweenWave: 0,
 };
 
 let updateWave = state => {
-  let {ship, screenSize, asteroids} = Collision.checkCollisions(state);
+  let {ship, screenSize, asteroids, particles} =
+    Collision.checkCollisions(state);
 
   let ship = Ship.update(ship, screenSize);
 
   let asteroids = List.map(Asteroid.update(screenSize), asteroids);
 
-  {...state, asteroids, ship};
+  let particles = Particle.updateParticles(particles);
+
+  {...state, asteroids, ship, particles};
 };
 
 let update = state => {
@@ -67,6 +71,7 @@ let draw = (ctx, state) => {
   };
 
   List.iter(Asteroid.draw(ctx), state.asteroids);
+  List.iter(Particle.draw(ctx), state.particles);
 
   Draw_canvas.lives(ctx, state.ship.lives);
   Draw_canvas.wave(ctx, state.wave, screenSize);
