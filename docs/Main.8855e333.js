@@ -6816,7 +6816,7 @@ exports.draw = draw;
 exports.updateLoop = updateLoop;
 exports.run = run;
 /* initialState Not a pure module */
-},{"../../../node_modules/bs-platform/lib/es6/list.js":14,"./Ship.js":6,"./Asteroid.js":7,"./Controls.js":8,"./Particle.js":9,"./Collision.js":10,"../../../node_modules/bs-platform/lib/es6/pervasives.js":13,"./Draw_canvas.js":11,"./PerformanceStats.js":12}],60:[function(require,module,exports) {
+},{"../../../node_modules/bs-platform/lib/es6/list.js":14,"./Ship.js":6,"./Asteroid.js":7,"./Controls.js":8,"./Particle.js":9,"./Collision.js":10,"../../../node_modules/bs-platform/lib/es6/pervasives.js":13,"./Draw_canvas.js":11,"./PerformanceStats.js":12}],33:[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 
@@ -6845,7 +6845,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '49218' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '57345' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -6986,5 +6986,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.parcelRequire, id);
   });
 }
-},{}]},{},[60,4], null)
+},{}]},{},[33,4], null)
 //# sourceMappingURL=/Main.8855e333.map
