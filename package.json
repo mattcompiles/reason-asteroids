@@ -2,10 +2,8 @@
   "name": "reason-game",
   "version": "0.1.0",
   "scripts": {
-    "build": "bsb -make-world && parcel index.html --out-dir docs",
-    "watch": "bsb -make-world -w",
-    "clean": "bsb -clean-world",
-    "start": "python -m SimpleHTTPServer 8000"
+    "build": "rm -rf docs && bsb -clean-world && bsb -make-world && parcel build index.html --out-dir docs",
+    "start": "concurrently \"bsb -make-world -w\" \"parcel index.html --out-dir docs --open\""
   },
   "keywords": [
     "BuckleScript"
@@ -13,6 +11,8 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "bs-platform": "^2.2.3"
+    "bs-platform": "^2.2.3",
+    "concurrently": "^4.0.1",
+    "parcel": "^1.10.3"
   }
 }
