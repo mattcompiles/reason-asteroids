@@ -1,7 +1,7 @@
 # ReasonML Asteroids
 
 Play here
-https://mattsjones.github.io/reason-asteroids/
+https://mattcompiles.github.io/reason-asteroids/
 
 ## Getting Started
 
